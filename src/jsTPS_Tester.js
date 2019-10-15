@@ -1,9 +1,5 @@
-package demo;
-
-import java.io.PrintStream;
-import java.util.Scanner;
-import jtps.jTPS;
-import jtps.jTPS_Transaction;
+import jsTPS from "./jsTPS"
+import jsTPS_Transaction from "./jsTPS_Transaction"
 
 /**
  * This driver demonstrates simple usage of the jTPS API.
@@ -11,16 +7,16 @@ import jtps.jTPS_Transaction;
  * @author THE McKilla Gorilla (accept no imposters)
  * @version 2.0
  */
-public class jTPS_Tester {
+class jsTPS_Tester {
     // HERE'S OUR TRANSACTION PROCESSING SYSTEM
-    static jTPS tps = new jTPS();
+    tps = new jsTPS();
     
     // HERE'S THE DATA WE'RE MANIPULATING IN THIS DEMO
-    static Num num = new Num();
+    num = new Num();
     
     // THESE ARE TO HELP WITH I/O
-    static Scanner input = new Scanner(System.in);
-    static PrintStream out = System.out;
+    // static Scanner input = new Scanner(System.in);
+    // static PrintStream out = System.out;
 
     /**
      * This runs our demo program. Note that it presents a 
@@ -29,9 +25,9 @@ public class jTPS_Tester {
      * 
      * @param args Not used in this demo.
      */
-    public static void main(String[] args) {
+    main() {
         // LOOP FLAG VARIABLE
-        boolean keepGoing = true;
+        let keepGoing = true;
         while (keepGoing) {
             // DISPLAY THE CURRENT TPS
             out.println("CURRENT jTPS:");
