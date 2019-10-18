@@ -24,7 +24,6 @@ class jsTPS_Unit_Test {
      */
     testAdd() {
         // WE'LL JUST USE A SIMPLE NUM FOR TESTING
-        console.log("Asdfasdfasdf");
         let tps = new jsTPS();
         let num = new Num();
         var assert = require('assert');

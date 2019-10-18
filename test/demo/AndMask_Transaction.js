@@ -15,6 +15,7 @@ class AndMask_Transaction extends jsTPS_Transaction {
      */
     constructor(initNum, initIntNum, initMask) {
         // KEEP THESE FOR LATER
+        super();
         this.num = initNum;
         this.intNum = initIntNum;
         this.mask = initMask;

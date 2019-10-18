@@ -7,6 +7,7 @@
     <script src="./src/jsTPS.js"></script>
     <script src="./src/jsTPS_Transaction.js"></script>
     <script src="./test/demo/AddToNum_Transaction.js"></script>
+    <script src="./test/demo/AndMask_Transaction.js"></script>
     <script src="./test/demo/Num.js"></script>
 
     <script>
@@ -53,12 +54,15 @@
             amountToAdd = parseInt(document.getElementById('add_textfield').value);
         }
         function addAmount() {
-            var transaction = new AddToNum_Transaction(num, amountToAdd);
-            tps.addTransaction(transaction);
-            document.getElementById('add_textfield').value = null;
-            document.getElementById('add_prompt').style.display = 'none';
-            addNewRow();
-            document.getElementById('num').innerHTML = "Num is " + num.getNum();
+            if (amountToAdd !== null) {
+                var transaction = new AddToNum_Transaction(num, amountToAdd);
+                tps.addTransaction(transaction);
+                document.getElementById('add_textfield').value = null;
+                document.getElementById('add_prompt').style.display = 'none';
+                addNewRow();
+                document.getElementById('num').innerHTML = "Num is " + num.getNum();
+                amountToAdd = null;
+            }
         }
         function addNewRow() {
             var stackTable = document.getElementById('stack_table');
@@ -74,6 +78,281 @@
         }
     </script>
 
+    <script>
+        function assertEquals(o1, o2, parent) {
+            var newDiv = document.createElement("div");
+            if (o1===o2) {
+                newDiv.innerHTML = "TRUE&nbsp;&nbsp;&nbsp;&nbsp;";
+                newDiv.setAttribute("style", "color: green; display: inline-block");
+            }
+            else {
+                newDiv.innerHTML = "FALSE&nbsp;&nbsp;&nbsp;";
+                newDiv.setAttribute("style", "color: red; display: inline-block");
+            }
+            document.getElementById(parent).appendChild(newDiv);
+        }
+
+        function assertTrue(o1, parent) {
+            var newDiv = document.createElement("div");
+            if (o1) {
+                newDiv.innerHTML = "TRUE&nbsp;&nbsp;&nbsp;&nbsp;";
+                newDiv.setAttribute("style", "color: green; display: inline-block");
+            }
+            else {
+                newDiv.innerHTML = "FALSE&nbsp;&nbsp;&nbsp;";
+                newDiv.setAttribute("style", "color: red; display: inline-block");
+            }
+            document.getElementById(parent).appendChild(newDiv);
+        }
+
+        function assertFalse(o1, parent) {
+            var newDiv = document.createElement("div");
+            if (!o1) {
+                newDiv.innerHTML = "TRUE&nbsp;&nbsp;&nbsp;&nbsp;";
+                newDiv.setAttribute("style", "color: green; display: inline-block");
+            }
+            else {
+                newDiv.innerHTML = "FALSE&nbsp;&nbsp;&nbsp;";
+                newDiv.setAttribute("style", "color: green; display: inline-block");
+            }
+            document.getElementById(parent).appendChild(newDiv);
+        }
+
+        function testAdd() {
+            var tps = new jsTPS();
+            var num = new Num();
+            
+            assertEquals(0, num.getNum(), "add_container");
+        
+            // ADD 5 TRANSACTION
+            tps.addTransaction(new AddToNum_Transaction(num, 5));
+            assertEquals(5, num.getNum(), "add_container");
+            assertEquals(1, tps.getSize(), "add_container");
+            assertEquals(0, tps.getRedoSize(), "add_container");
+            assertEquals(1, tps.getUndoSize(), "add_container");
+            
+            // ADD 10 TRANSACTION
+            tps.addTransaction(new AddToNum_Transaction(num, 10));
+            assertEquals(15, num.getNum(), "add_container");
+            assertEquals(2, tps.getSize(), "add_container");
+            assertEquals(0, tps.getRedoSize(), "add_container");
+            assertEquals(2, tps.getUndoSize(), "add_container");
+            
+            // ADD 15 TRANSACTION
+            tps.addTransaction(new AddToNum_Transaction(num, 20));
+            assertEquals(35, num.getNum(), "add_container");
+            assertEquals(3, tps.getSize(), "add_container");
+            assertEquals(0, tps.getRedoSize(), "add_container");
+            assertEquals(3, tps.getUndoSize(), "add_container");
+        }
+
+        function testAndMask() {
+            var tps = new jsTPS();
+            var num = new Num();
+            assertEquals(0, num.getNum(), "and_mask_container");
+            
+            // ADD 5 TRANSACTION
+            tps.addTransaction(new AddToNum_Transaction(num, 12));
+            tps.addTransaction(new AndMask_Transaction(num, num.getNum(), 4));
+            assertEquals(4, num.getNum(), "and_mask_container");
+            assertEquals(2, tps.getSize(), "and_mask_container");
+            
+            tps.undoTransaction();
+            assertEquals(12, num.getNum(), "and_mask_container");
+            assertEquals(2, tps.getSize(), "and_mask_container");
+            assertEquals(1, tps.getRedoSize(), "and_mask_container");
+            assertEquals(1, tps.getUndoSize(), "and_mask_container");
+        }
+
+        function testUndo() {
+            // WE'LL JUST USE A SIMPLE NUM FOR TESTING
+            var tps = new jsTPS();
+            var num = new Num();
+            assertEquals(num.getNum(), 0, "undo_container");
+            assertFalse(tps.hasTransactionToUndo(), "undo_container");
+            assertFalse(tps.hasTransactionToRedo(), "undo_container");
+            
+            // ADD 3 TRANSACTIONS (5, 10, and 15)
+            tps.addTransaction(new AddToNum_Transaction(num, 5));
+            tps.addTransaction(new AddToNum_Transaction(num, 10));
+            tps.addTransaction(new AddToNum_Transaction(num, 20));
+            assertTrue(tps.hasTransactionToUndo(), "undo_container");
+            assertFalse(tps.hasTransactionToRedo(), "undo_container");
+            assertEquals(35, num.getNum(), "undo_container");
+            assertTrue(tps.hasTransactionToUndo(), "undo_container");
+            assertEquals(3, tps.getSize(), "undo_container");
+            assertEquals(0, tps.getRedoSize(), "undo_container");
+            assertEquals(3, tps.getUndoSize(), "undo_container");
+            
+            // UNDO A TRANSACTION
+            tps.undoTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "undo_container");
+            assertTrue(tps.hasTransactionToRedo(), "undo_container");
+            assertEquals(15, num.getNum(), "undo_container");
+            assertEquals(3, tps.getSize(), "undo_container");
+            assertEquals(1, tps.getRedoSize(), "undo_container");
+            assertEquals(2, tps.getUndoSize(), "undo_container");
+            
+            // UNDO ANOTHER
+            tps.undoTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "undo_container");
+            assertTrue(tps.hasTransactionToRedo(), "undo_container");
+            assertEquals(5, num.getNum(), "undo_container");
+            assertEquals(3, tps.getSize(), "undo_container");
+            assertEquals(2, tps.getRedoSize(), "undo_container");
+            assertEquals(1, tps.getUndoSize(), "undo_container");
+            
+            // AND ANOTHER
+            tps.undoTransaction();
+            assertFalse(tps.hasTransactionToUndo(), "undo_container");
+            assertTrue(tps.hasTransactionToRedo(), "undo_container");
+            assertEquals(0, num.getNum(), "undo_container");
+            assertEquals(3, tps.getSize(), "undo_container");
+            assertEquals(3, tps.getRedoSize(), "undo_container");
+            assertEquals(0, tps.getUndoSize(), "undo_container");
+            
+            // WE HAVE NO MORE TO UNDO SO THIS SHOULD DO NOTHING
+            tps.undoTransaction();
+            assertFalse(tps.hasTransactionToUndo(), "undo_container");
+            assertTrue(tps.hasTransactionToRedo(), "undo_container");
+            assertEquals(0, num.getNum(), "undo_container");
+            assertEquals(3, tps.getSize(), "undo_container");
+            assertEquals(3, tps.getRedoSize(), "undo_container");
+            assertEquals(0, tps.getUndoSize(), "undo_container");
+        }
+        function testRedo() {
+            // WE'LL JUST USE A SIMPLE NUM FOR TESTING
+            var tps = new jsTPS();
+            var num = new Num();
+            assertEquals(num.getNum(), 0, "redo_container");
+            
+            // ADD 3 TRANSACTIONS (5, 10, and 15)
+            tps.addTransaction(new AddToNum_Transaction(num, 5));
+            tps.addTransaction(new AddToNum_Transaction(num, 10));
+            tps.addTransaction(new AddToNum_Transaction(num, 20));
+            assertTrue(tps.hasTransactionToUndo(), "redo_container");
+            assertFalse(tps.hasTransactionToRedo(), "redo_container");
+            assertEquals(35, num.getNum(), "redo_container");
+            assertEquals(3, tps.getSize(), "redo_container");
+            assertEquals(0, tps.getRedoSize(), "redo_container");
+            assertEquals(3, tps.getUndoSize(), "redo_container");
+            
+            // UNDO A TRANSACTION AND THEN REDO IT
+            tps.undoTransaction();
+            tps.doTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "redo_container");
+            assertFalse(tps.hasTransactionToRedo(), "redo_container");
+            assertEquals(35, num.getNum(), "redo_container");
+            assertEquals(3, tps.getSize(), "redo_container");
+            assertEquals(0, tps.getRedoSize(), "redo_container");
+            assertEquals(3, tps.getUndoSize(), "redo_container");
+            
+            // UNDO TWO TRANSACTIONS AND THEN REDO THEM
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "redo_container");
+            assertFalse(tps.hasTransactionToRedo(), "redo_container");
+            assertEquals(35, num.getNum(), "redo_container");
+            assertEquals(3, tps.getSize(), "redo_container");
+            assertEquals(0, tps.getRedoSize(), "redo_container");
+            assertEquals(3, tps.getUndoSize(), "redo_container");
+            
+            // UNDO ALL THREE TRANSACTIONS AND REDO THEM
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "redo_container");
+            assertFalse(tps.hasTransactionToRedo(), "redo_container");
+            assertEquals(35, num.getNum(), "redo_container");
+            assertEquals(3, tps.getSize(), "redo_container");
+            assertEquals(0, tps.getRedoSize(), "redo_container");
+            assertEquals(3, tps.getUndoSize(), "redo_container");
+            
+            // UNDO THREE TRANSACTIONS AND REDO TWO
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "redo_container");
+            assertTrue(tps.hasTransactionToRedo(), "redo_container");
+            assertEquals(15, num.getNum(), "redo_container");
+            assertEquals(3, tps.getSize(), "redo_container");
+            assertEquals(1, tps.getRedoSize(), "redo_container");
+            assertEquals(2, tps.getUndoSize(), "redo_container");
+            
+            // UNDO ALL THREE TRANSACTIONS AND REDO FOUR, WHICH
+            // SHOULD NOT PRODUCE AN ERROR BUT THE LAST
+            // REDO SHOULD DO NOTHING
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.undoTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            tps.doTransaction();
+            assertTrue(tps.hasTransactionToUndo(), "redo_container");
+            assertFalse(tps.hasTransactionToRedo(), "redo_container");
+            assertEquals(35, num.getNum(), "redo_container");
+            assertEquals(3, tps.getSize(), "redo_container");
+            assertEquals(0, tps.getRedoSize(), "redo_container");
+            assertEquals(3, tps.getUndoSize(), "redo_container");
+        }
+
+        function testClear() {
+            // WE'LL JUST USE A SIMPLE NUM FOR TESTING
+            var tps = new jsTPS();
+            var num = new Num();
+            assertEquals(num.getNum(), 0, "clear_container");
+            
+            // ADD 3 TRANSACTIONS (5, 10, and 15)
+            tps.addTransaction(new AddToNum_Transaction(num, 5));
+            tps.addTransaction(new AddToNum_Transaction(num, 10));
+            tps.addTransaction(new AddToNum_Transaction(num, 20));
+            assertEquals(35, num.getNum(), "clear_container");
+            assertEquals(3, tps.getSize(), "clear_container");
+            assertEquals(0, tps.getRedoSize(), "clear_container");
+            assertEquals(3, tps.getUndoSize(), "clear_container");
+                    
+            // CLEAR ALL THE TRANSACTIONS
+            tps.clearAllTransactions();
+            assertEquals(35, num.getNum(), "clear_container");
+            assertEquals(0, tps.getSize(), "clear_container");
+            assertEquals(0, tps.getRedoSize(), "clear_container");
+            assertEquals(0, tps.getUndoSize(), "clear_container");
+            
+            // ADD 3 TRANSACTIONS (5, 10, and 15)
+            tps.addTransaction(new AddToNum_Transaction(num, 5));
+            tps.addTransaction(new AddToNum_Transaction(num, 10));
+            tps.addTransaction(new AddToNum_Transaction(num, 20));
+            assertEquals(70, num.getNum(), "clear_container");
+            assertEquals(3, tps.getSize(), "clear_container");
+            assertEquals(0, tps.getRedoSize(), "clear_container");
+            assertEquals(3, tps.getUndoSize(), "clear_container");
+                    
+            // CLEAR THEM ALL OUT AGAIN
+            tps.clearAllTransactions();
+            assertEquals(70, num.getNum(), "clear_container");
+            assertEquals(0, tps.getSize(), "clear_container");
+            assertEquals(0, tps.getRedoSize(), "clear_container");
+            assertEquals(0, tps.getUndoSize(), "clear_container");
+            
+            // ADD 3 TRANSACTIONS (5, 10, and 15)
+            tps.addTransaction(new AddToNum_Transaction(num, 5));
+            tps.addTransaction(new AddToNum_Transaction(num, 10));
+            tps.addTransaction(new AddToNum_Transaction(num, 20));
+            assertEquals(105, num.getNum(), "clear_container");
+            assertEquals(3, tps.getSize(), "clear_container");
+            assertEquals(0, tps.getRedoSize(), "clear_container");
+            assertEquals(3, tps.getUndoSize(), "clear_container");
+        }   
+    </script>
+
     <style>
         table, th, td {
         border: 1px solid black;
@@ -86,13 +365,20 @@
 <body>
     <div id='jsTPS_tester_container' style='height: 200px; overflow: hidden; position: relative; border: 2px solid black; margin-bottom: 2%; padding: 2%'>
         <div id='selection_prompt' style='width:30%; position:absolute; left:30px; word-wrap:break-word;'>
-            ENTER A SELECTION: </span>
+            ENTER A SELECTION:
             <input id='selection_textfield' type="text" size="4" defaultValue="" onchange="setSelection(this.value)"/>
-            <button type="button" onclick="updateStack()">Enter</button>
-            <div>1) Add a Transaction</div>
-            <div id='add_prompt' style='display:none;'><i>&nbsp;&nbsp;&nbsp;&nbsp;Enter an amount to add: </i>
+            <button type="button" onclick="updateStack()">
+                Enter
+            </button>
+            <div>
+                1) Add a Transaction
+            </div>
+            <div id='add_prompt' style='display:none;'>
+                <i>&nbsp;&nbsp;&nbsp;&nbsp;Enter an amount to add: </i>
                 <input id='add_textfield' type="text" size="13" defaultValue="" onchange="setAmount(this.value)"/>
-                <button id='amount_button' type="button" onclick="addAmount()">Enter</button>
+                <button id='amount_button' type="button" onclick="addAmount()">
+                    Enter
+                </button>
             </div>
             <div>
                 2) Undo a Transaction</br>
@@ -101,10 +387,15 @@
                 5) Reset Num and Transactions</br>
                 Q) Quit
             </div>
-            <div id='num' style="font-size: 20px; font-weight: bold">Num is 0</div>
-            <div id="quit" style="display: none; font-size: 30px; color: blue">GOODBYE</div>
+            <div id='num' style="font-size: 20px; font-weight: bold">
+                Num is 0
+            </div>
+            <div id="quit" style="display: none; font-size: 30px; color: blue">
+                GOODBYE
+            </div>
         </div>
-        <div id='stack' style='width:70%; position:absolute; right:0;'>CURRENT jsTPS:
+        <div id='stack' style='width:70%; position:absolute; right:0;'>
+            CURRENT jsTPS:
             <table id="stack_table" style="width:99%">
                 <tr>
                     <th style='width:5%'>Total</th>
@@ -116,7 +407,32 @@
         </div>
     </div>
     <div id='jsTPS_unit_test_container' style='border: 2px solid black; padding: 2%'>
-        
+        <div id='add_container'>
+            <button id='add_button' type="button" style="width:9%; margin-bottom:4px" onclick="testAdd()">
+                Test Add
+            </button>
+        </div>
+        <div id='and_mask_container'>
+            <button id='and_mask_button' type="button" style="width:9%; margin-bottom:4px" onclick="testAndMask()">
+                Test And Mask
+            </button>
+        </div>
+        <div id='undo_container'>
+            <button id='undo_button' type="button" style="width:9%; margin-bottom:4px" onclick="testUndo()">
+                Test Undo
+            </button>
+        </div>
+        <div id='redo_container'>
+            <button id='redo_button' type="button" style="width:9%; margin-bottom:4px" onclick="testRedo()">
+                Test Redo
+            </button>
+        </div>
+        <div id='clear_container'>
+            <button id='clear_button' type="button" style="width:9%; margin-bottom:4px" onclick="testClear()">
+                Test Clear
+            </button>
+        </div>
+
     </div>
 </body>
 
