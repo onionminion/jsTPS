@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>testing</title>
+    
+    <!-- <script type="module" src="./jsTPS.js"></script>
+    <script type="module" src="./jsTPS_Transaction.js"></script> -->
+    <script src="./js/TodoList.js"></script>
+    <script src="./js/Num.js"></script>
+    <!-- <script type="module" src="./AddToNum_Transaction.js"></script> -->
+
+    <script>
+        window.onload = function () {
+            window.tps = new TodoList();
+            window.num = new Num();
+        };
+    </script>
+    <script>
+        
+        var selection = null;
+        var amount = null;
+        var keepGoing = true;
+        function setSelection() {
+            while (keepGoing) {
+                selection = document.getElementById('selection_textfield').value;
+                if (selection.startsWith("1")) {
+                    document.getElementById('add_prompt').style.display = 'block';
+                    var transaction = new AddToNum_Transaction(num, amountToAdd);
+                }
+                keepGoing=false;
+            }
+        }
+        function setAmount() {
+            amount = doucment.getElementById('add_textfield').value;
+        }
+    </script>
+
+</head>
+
+<body>
+    <div id='jsTPS_tester_container' style='height: 200px; overflow: hidden; position: relative; border: 2px solid black; margin-bottom: 2%; padding: 2%'>
+        <div id='stack' style='width:50%; position:absolute; left:30px;'>CURRENT jTPS:
+        </div>
+        <div id='selection_prompt' style='width:50%; position:absolute; right:0; word-wrap:break-word;'>
+            ENTER A SELECTION: </span>
+            <input id='selection_textfield' type="text" size="4"/>
+            <button type="button" onclick="setSelection()">Enter</button>
+            <div>1) Add a Transaction</div>
+            <div id='add_prompt' style='display:none;'><i>&nbsp;&nbsp;&nbsp;&nbsp;Enter an amount to add: </i>
+                <input id='add_textfield' type="text" size="13"/>
+                <button type="button" onclick="setAmount()">Enter</button>
+            </div>
+            <div>
+                2) Undo a Transaction</br>
+                3) Redo a Transaction</br>
+                4) Clear All Transactions</br>
+                5) Reset Num and Transactions</br>
+            </div>
+        </div>
+    </div>
+    <div id='jsTPS_unit_test_container' style='border: 2px solid black; padding: 2%'>
+        
+    </div>
+</body>
+
+</html>

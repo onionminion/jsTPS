@@ -48,14 +48,14 @@ class jsTPS_Tester {
             out.print("-");
 
             // GET THE USER SELECTION
-            String entry = input.nextLine();
+            var entry = input.nextLine();
             
             // ADD AND EXECUTE A TRANSACTION
             if (entry.startsWith("1")) {
                 System.out.print("\nEnter an amount to add: ");
                 entry = input.nextLine();
-                int amountToAdd = Integer.parseInt(entry);
-                jTPS_Transaction transaction = new AddToNum_Transaction(num, amountToAdd);
+                var amountToAdd = Integer.parseInt(entry);
+                var transaction = new AddToNum_Transaction(num, amountToAdd);
                 tps.addTransaction(transaction);
             }            
             // UNDO A TRANSACTION
