@@ -23,4 +23,3 @@ class jsTPS_Transaction {
     undoTransaction() {}
 }
 
-export default jsTPS_Transaction;

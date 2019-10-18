@@ -1,4 +1,3 @@
-import jsTPS_Transaction from './jsTPS_Transaction'
 /**
  *
  * @author McKillaGorilla

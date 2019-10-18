@@ -1,5 +1,3 @@
-import jsTPS_Transaction from "./jsTPS_Transaction"
-
 /**
  * AddToNum_Transaction.java
  * 
@@ -23,6 +21,7 @@ class AddToNum_Transaction extends jsTPS_Transaction {
      */
     constructor(initNum, initAmountToAdd) {
         // KEEP THESE FOR LATER
+        super();
         this.num = initNum;
         this.amountToAdd = initAmountToAdd;
     }
@@ -54,5 +53,3 @@ class AddToNum_Transaction extends jsTPS_Transaction {
         return "Add " + this.amountToAdd;
     }
 }
-
-export default AddToNum_Transaction

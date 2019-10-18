@@ -206,6 +206,21 @@ class jsTPS {
         }
         return text;
     }
-}
 
-export default jsTPS;
+    getManyTransactions() {
+        return this.transactions.length;
+    }
+
+    getCurrentIndex() {
+        return this.mostRecentTransaction;
+    }
+
+    getCurrentTransaction() {
+        let text="";
+        for (let i = 0; i <= this.mostRecentTransaction; i++) {
+            let jT = this.transactions[i];
+            text += "--" + jT.toString();
+        }
+        return text
+    }
+}
